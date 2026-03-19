@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flores Amarillas para Ti 💛</title>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(to bottom, #fff9c4, #fffde7);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #5d4037;
+        }
+
+        .flower-container {
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            animation: fadeIn 3s ease-in;
+        }
+
+        /* Animación simple del Girasol */
+        .sunflower {
+            font-size: 80px;
+            animation: rotate 10s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Lluvia de pétalos/flores */
+        .falling-flower {
+            position: fixed;
+            top: -10%;
+            font-size: 24px;
+            user-select: none;
+            z-index: 1;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="flower-container">
+        <div class="sunflower">🌻</div>
+        <h1>Para la más especial...</h1>
+        <p>Hoy el mundo se llena de flores amarillas, pero ninguna brilla tanto como tú.</p>
+    </div>
+
+    <script>
+        function createFlower() {
+            const flower = document.createElement('div');
+            const symbols = ['🌻', '✨', '💛', '🌼'];
+            flower.classList.add('falling-flower');
+            flower.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+            flower.style.left = Math.random() * 100 + 'vw';
+            flower.style.animationDuration = Math.random() * 3 + 2 + 's';
+            flower.style.opacity = Math.random();
+            
+            document.body.appendChild(flower);
+
+            setTimeout(() => {
+                flower.remove();
+            }, 5000);
+        }
+
+        setInterval(createFlower, 300);
+    </script>
+</body>
+</html>
