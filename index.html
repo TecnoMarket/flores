@@ -3,89 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Girasoles 3D - Engineering Edition 🌻</title>
+    <title>Jardín 3D para Ruby 🌻</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.8); z-index: 100; transition: 1.5s ease;
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #btn-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            background: #000; z-index: 999;
         }
-        #overlay.hidden { opacity: 0; pointer-events: none; }
-        .btn-start {
-            padding: 15px 40px; border: 2px solid #ffeb3b; background: transparent;
-            color: #ffeb3b; font-size: 14px; letter-spacing: 5px; cursor: pointer;
-            text-transform: uppercase; transition: 0.3s;
+        button {
+            padding: 20px 40px; font-size: 18px; cursor: pointer;
+            background: #ffeb3b; border: none; border-radius: 50px;
+            font-weight: bold; box-shadow: 0 0 20px rgba(255,235,59,0.5);
         }
-        .btn-start:hover { background: #ffeb3b; color: #000; }
-        .ui-label {
-            position: absolute; top: 20px; left: 20px; color: rgba(255,255,255,0.3);
-            font-size: 10px; letter-spacing: 2px;
-        }
+        #ui { position: fixed; top: 10px; left: 10px; color: #ffeb3b; font-size: 10px; letter-spacing: 2px; z-index: 10; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <div id="overlay">
-        <button class="btn-start" onclick="initExperience()">Ver Jardín Digital</button>
+    <div id="ui">ENGINE: THREE.JS | MODE: GPU_ACCELERATED | TARGET: RUBY</div>
+
+    <div id="btn-container">
+        <button onclick="start()">INICIAR EXPERIENCIA 3D</button>
     </div>
 
-    <div class="ui-label">MODELO: HELIANTHUS 3D v5.0 | SHADER: COSMIC VORTEX</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
+    <script>
+        let scene, camera, renderer, sunflowers = [];
+        let isStarted = false;
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-        let scene, camera, renderer, controls, clock;
-        const sunflowers = [];
-
-        window.initExperience = function() {
-            document.getElementById('overlay').classList.add('hidden');
+        function start() {
+            document.getElementById('btn-container').style.display = 'none';
             init();
             animate();
         }
 
         function init() {
+            // 1. ESCENA
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020205);
-            clock = new THREE.Clock();
+            scene.background = new THREE.Color(0x050505);
 
+            // 2. CÁMARA
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 12, 35);
+            camera.position.set(0, 15, 40);
+            camera.lookAt(0, 5, 0);
 
+            // 3. RENDERER
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
             document.body.appendChild(renderer.domElement);
 
-            // LUCES
-            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambient);
-            const point = new THREE.PointLight(0xffcc00, 20, 100);
-            point.position.set(10, 20, 10);
-            scene.add(point);
+            // 4. ILUMINACIÓN (Crucial para no ver negro)
+            const light = new THREE.DirectionalLight(0xffffff, 3);
+            light.position.set(10, 20, 10);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-            // CREAR JARDÍN (REEMPLAZANDO LOS MODELOS ANTERIORES)
-            for(let i=0; i<150; i++) {
+            // 5. GENERACIÓN DE GIRASOLES
+            for (let i = 0; i < 100; i++) {
                 const x = (Math.random() - 0.5) * 80;
                 const z = (Math.random() - 0.5) * 80;
                 createSunflower(x, z);
             }
-
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.5;
 
             window.addEventListener('resize', onWindowResize);
         }
@@ -93,80 +74,55 @@
         function createSunflower(x, z) {
             const group = new THREE.Group();
 
-            // 1. TALLO CURVO (CatmullRom)
-            const h = 5 + Math.random() * 3;
-            const lean = (Math.random() - 0.5) * 2;
-            const points = [
+            // Tallo curvo con puntos de control (Ingeniería de Curvas)
+            const h = 5 + Math.random() * 2;
+            const curve = new THREE.CatmullRomCurve3([
                 new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(lean * 0.3, h * 0.4, (Math.random()-0.5) * 1.5),
-                new THREE.Vector3(lean, h, 0)
-            ];
-            const curve = new THREE.CatmullRomCurve3(points);
-            const stemGeo = new THREE.TubeGeometry(curve, 32, 0.1, 12, false);
+                new THREE.Vector3((Math.random()-0.5)*2, h * 0.5, (Math.random()-0.5)*2),
+                new THREE.Vector3((Math.random()-0.5)*2, h, 0)
+            ]);
+            
+            const stemGeo = new THREE.TubeGeometry(curve, 20, 0.1, 8, false);
             const stemMat = new THREE.MeshStandardMaterial({ color: 0x2d5a27 });
             const stem = new THREE.Mesh(stemGeo, stemMat);
             group.add(stem);
 
-            // 2. CABEZA DEL GIRASOL
+            // Cabeza del girasol
             const head = new THREE.Group();
-            const topPos = curve.getPoint(1);
-            head.position.copy(topPos);
-            head.lookAt(topPos.clone().add(curve.getTangent(1)));
-            head.rotateX(Math.PI / 2);
-
-            // Centro (Semillas)
-            const centerGeo = new THREE.CylinderGeometry(0.8, 0.7, 0.3, 32);
-            const centerMat = new THREE.MeshStandardMaterial({ color: 0x3b2519, roughness: 1 });
-            const center = new THREE.Mesh(centerGeo, centerMat);
+            const top = curve.getPoint(1);
+            head.position.copy(top);
+            
+            // Centro
+            const center = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.8, 0.8, 0.3, 24),
+                new THREE.MeshStandardMaterial({ color: 0x3b2519 })
+            );
+            center.rotation.x = Math.PI / 2;
             head.add(center);
 
-            // 3. PÉTALOS REALISTAS (Bezier Shape)
-            const petalShape = new THREE.Shape();
-            petalShape.moveTo(0,0);
-            petalShape.bezierCurveTo(0.3, 0.2, 0.5, 0.8, 0, 1.5);
-            petalShape.bezierCurveTo(-0.5, 0.8, -0.3, 0.2, 0, 0);
+            // Pétalos (Bézier Shape)
+            const pShape = new THREE.Shape();
+            pShape.moveTo(0,0);
+            pShape.quadraticCurveTo(0.4, 0.5, 0, 1.5);
+            pShape.quadraticCurveTo(-0.4, 0.5, 0, 0);
+            const pGeo = new THREE.ShapeGeometry(pShape);
+            const pMat = new THREE.MeshStandardMaterial({ color: 0xffcc00, side: THREE.DoubleSide });
 
-            const petalGeo = new THREE.ShapeGeometry(petalShape);
-            const petalMat = new THREE.MeshStandardMaterial({ 
-                color: 0xffcc00, 
-                side: THREE.DoubleSide,
-                emissive: 0xffa000,
-                emissiveIntensity: 0.1
-            });
-
-            const numPetals = 36;
-            for(let i=0; i<numPetals; i++) {
+            for(let i=0; i<24; i++) {
+                const pMesh = new THREE.Mesh(pGeo, pMat);
                 const pivot = new THREE.Group();
-                const p = new THREE.Mesh(petalGeo, petalMat);
-                pivot.rotation.y = (i / numPetals) * Math.PI * 2;
-                p.position.z = 0.65;
-                p.rotation.x = -Math.PI / 2 + 0.25;
-                pivot.add(p);
+                pivot.rotation.z = (i / 24) * Math.PI * 2;
+                pMesh.position.y = 0.6;
+                pMesh.rotation.x = 0.2;
+                pivot.add(pMesh);
                 head.add(pivot);
             }
 
-            // 4. HOJAS (Estructura de soporte lateral)
-            const leafShape = new THREE.Shape();
-            leafShape.moveTo(0,0);
-            leafShape.quadraticCurveTo(0.6, 0.6, 0, 1.4);
-            leafShape.quadraticCurveTo(-0.6, 0.6, 0, 0);
-            const leafGeo = new THREE.ShapeGeometry(leafShape);
-            const leafMat = new THREE.MeshStandardMaterial({ color: 0x3d7a35, side: THREE.DoubleSide });
-
-            for(let i=0; i<2; i++) {
-                const leaf = new THREE.Mesh(leafGeo, leafMat);
-                const t = 0.4 + (i * 0.25);
-                leaf.position.copy(curve.getPoint(t));
-                leaf.lookAt(curve.getPoint(t+0.1));
-                leaf.rotation.z += (i%2==0 ? 1 : -1) * 1.2;
-                leaf.scale.set(0.7, 0.7, 0.7);
-                group.add(leaf);
-            }
-
+            group.add(head);
             group.position.set(x, 0, z);
-            group.scale.set(0,0,0);
+            group.scale.set(0.1, 0.1, 0.1); // Escala inicial pequeña
             scene.add(group);
-            sunflowers.push({ mesh: group, delay: Math.random() * 2 });
+            sunflowers.push(group);
         }
 
         function onWindowResize() {
@@ -177,18 +133,15 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            const delta = clock.getElapsedTime();
+            const time = Date.now() * 0.001;
 
             sunflowers.forEach((s, i) => {
-                if(delta > s.delay && s.mesh.scale.x < 1) {
-                    s.mesh.scale.addScalar(0.01);
-                }
-                // Viento suave (Matemática trigonométrica)
-                s.mesh.rotation.x = Math.sin(delta + i) * 0.03;
-                s.mesh.rotation.z = Math.cos(delta + i) * 0.03;
+                // Crecimiento
+                if(s.scale.x < 1) s.scale.addScalar(0.01);
+                // Movimiento de viento suave
+                s.rotation.x = Math.sin(time + i) * 0.05;
             });
 
-            controls.update();
             renderer.render(scene, camera);
         }
     </script>
