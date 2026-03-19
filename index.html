@@ -3,85 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flores Amarillas para Ti 💛</title>
+    <title>Para la persona más especial 💛</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
     <style>
-        body {
+        :root {
+            --primary-yellow: #ffeb3b;
+            --soft-yellow: #fff9c4;
+            --text-color: #5d4037;
+        }
+
+        body, html {
             margin: 0;
-            background: linear-gradient(to bottom, #fff9c4, #fffde7);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1a1a1a; /* Fondo oscuro inicial para contraste */
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .interface {
+            position: relative;
+            z-index: 10;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            color: #5d4037;
-        }
-
-        .flower-container {
+            height: 100vh;
+            color: white;
             text-align: center;
-            z-index: 10;
+            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.8) 100%);
+            transition: opacity 2s ease;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            animation: fadeIn 3s ease-in;
+            font-family: 'Dancing Script', cursive;
+            font-size: 4rem;
+            margin: 0;
+            text-shadow: 0 0 20px var(--primary-yellow);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1.5s ease;
         }
 
-        /* Animación simple del Girasol */
-        .sunflower {
-            font-size: 80px;
-            animation: rotate 10s linear infinite;
-            display: inline-block;
+        .message {
+            font-size: 1.2rem;
+            max-width: 80%;
+            margin-top: 20px;
+            opacity: 0;
+            transition: all 2s ease 1s;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .btn-start {
+            margin-top: 40px;
+            padding: 15px 35px;
+            border: 2px solid var(--primary-yellow);
+            background: transparent;
+            color: var(--primary-yellow);
+            cursor: pointer;
+            border-radius: 50px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            transition: all 0.3s;
         }
 
-        /* Lluvia de pétalos/flores */
-        .falling-flower {
-            position: fixed;
-            top: -10%;
-            font-size: 24px;
-            user-select: none;
-            z-index: 1;
-            animation: fall linear forwards;
+        .btn-start:hover {
+            background: var(--primary-yellow);
+            color: #000;
+            box-shadow: 0 0 30px var(--primary-yellow);
         }
 
-        @keyframes fall {
-            to { transform: translateY(110vh) rotate(360deg); }
-        }
+        .hidden { opacity: 0 !important; pointer-events: none; }
+        .visible { opacity: 1 !important; transform: translateY(0) !important; }
     </style>
 </head>
 <body>
 
-    <div class="flower-container">
-        <div class="sunflower">🌻</div>
-        <h1>Para la más especial...</h1>
-        <p>Hoy el mundo se llena de flores amarillas, pero ninguna brilla tanto como tú.</p>
+    <canvas id="canvas"></canvas>
+
+    <div class="interface" id="main-ui">
+        <h1 id="title">¿Lista para tu sorpresa?</h1>
+        <button class="btn-start" onclick="startExperience()">PRESIONA AQUÍ</button>
+    </div>
+
+    <div class="interface hidden" id="final-message">
+        <h1 class="visible">Flores Amarillas para Ti</h1>
+        <p class="message visible">Porque no importa el lugar ni la distancia, tu brillo siempre me alcanza. <br> 🌻 Eres la persona más especial del mundo. 🌻</p>
     </div>
 
     <script>
-        function createFlower() {
-            const flower = document.createElement('div');
-            const symbols = ['🌻', '✨', '💛', '🌼'];
-            flower.classList.add('falling-flower');
-            flower.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
-            flower.style.left = Math.random() * 100 + 'vw';
-            flower.style.animationDuration = Math.random() * 3 + 2 + 's';
-            flower.style.opacity = Math.random();
-            
-            document.body.appendChild(flower);
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
 
-            setTimeout(() => {
-                flower.remove();
-            }, 5000);
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
 
-        setInterval(createFlower, 300);
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height + canvas.height;
+                this.size = Math.random() * 15 + 5;
+                this.speed = Math.random() * 1 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.5;
+                this.content = Math.random() > 0.5 ? '🌻' : '✨';
+            }
+
+            update() {
+                this.y -= this.speed;
+                if (this.y < -50) this.reset();
+            }
+
+            draw() {
+                ctx.globalAlpha = this.opacity;
+                ctx.font = `${this.size}px serif`;
+                ctx.fillText(this.content, this.x, this.y);
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < 50; i++) {
+                particles.push(new Particle());
+            }
+            animate();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        function startExperience() {
+            document.getElementById('main-ui').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('final-message').classList.remove('hidden');
+                document.body.style.background = "linear-gradient(to bottom, #2c3e50, #000000)";
+            }, 1000);
+            
+            // Aumentar partículas al iniciar
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => particles.push(new Particle()), i * 50);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => document.getElementById('title').classList.add('visible'), 500);
+            init();
+        });
     </script>
 </body>
 </html>
