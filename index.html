@@ -3,348 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocolo Helianthus: Ruby CL</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300&display=swap" rel="stylesheet">
+    <title>Flores Amarillas para Ruby 🌻</title>
     <style>
-        :root { --gold: #ffcc00; --bg: #030305; --pink: #ff69b4; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; overflow: hidden; }
-        
-        /* Pantalla de Carga de Ingeniería */
-        #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: black; z-index: 1000; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1.5s ease;
+        *,
+        *::after,
+        *::before {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
         }
-        .sys-text { font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; text-shadow: 0 0 10px var(--gold); }
-        .progress { width: 250px; height: 1px; background: rgba(255,204,0,0.1); position: relative; }
-        .fill { position: absolute; width: 0%; height: 100%; background: var(--gold); box-shadow: 0 0 10px var(--gold); transition: width 0.3s; }
-        #start-btn { display: none; background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 15px 40px; font-family: 'Orbitron', sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 5px; transition: 0.4s; }
-        #start-btn:hover { background: var(--gold); color: black; box-shadow: 0 0 30px var(--gold); }
 
-        /* Capa de Interfaz y Mensaje */
-        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .info { position: absolute; top: 30px; left: 30px; border-left: 1px solid var(--gold); padding-left: 15px; }
-        .info h3 { margin: 0; font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 14px; letter-spacing: 3px; }
-        .info p { margin: 5px 0 0; font-size: 9px; text-transform: uppercase; opacity: 0.5; }
-        
-        #final-msg { position: absolute; bottom: 50px; width: 100%; text-align: center; opacity: 0; transition: opacity 3s; font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: white; letter-spacing: 12px; }
-        #click-prompt { position: absolute; bottom: 30px; right: 30px; font-size: 10px; color: var(--pink); letter-spacing: 3px; animation: pulse 2s infinite; text-transform: uppercase; }
-        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+        :root {
+            --dark-color: #030305;
+            --flower-yellow: #FFD700;
+            --flower-orange: #FF8C00;
+            --stem-green: #1d4d2b;
+            --glow-color: rgba(255, 215, 0, 0.3);
+        }
 
-        canvas { display: block; }
+        body {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--dark-color);
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* Fondo Estrellado Suave */
+        .night {
+            position: fixed;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 100%;
+            filter: blur(0.1vmin);
+            background-image: 
+                radial-gradient(ellipse at top, transparent 0%, var(--dark-color)), 
+                radial-gradient(ellipse at bottom, var(--dark-color), rgba(255, 235, 59, 0.1)), 
+                repeating-linear-gradient(220deg, black 0px, black 19px, transparent 19px, transparent 22px), 
+                linear-gradient(90deg, #1d4d2b22, #000);
+        }
+
+        .flowers {
+            position: relative;
+            transform: scale(0.9);
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Estructura Base de la Flor */
+        .flower {
+            position: absolute;
+            bottom: 10vmin;
+            transform-origin: bottom center;
+            z-index: 10;
+            --fl-speed: 0.8s;
+        }
+
+        /* Variaciones de flores */
+        .flower--1 { left: -20vmin; animation: moving-flower-1 4s linear infinite; }
+        .flower--2 { left: 10vmin; transform: rotate(15deg); animation: moving-flower-2 4s linear infinite; }
+        .flower--3 { left: -5vmin; transform: rotate(-10deg); animation: moving-flower-3 4s linear infinite; }
+
+        .flower__line {
+            height: 60vmin;
+            width: 1.5vmin;
+            background-image: linear-gradient(to top, var(--stem-green), #3a7d44);
+            box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
+            animation: grow-flower-tree 4s backwards;
+        }
+
+        /* PÉTALOS REDONDEADOS */
+        .flower__leafs {
+            position: relative;
+            animation: blooming-flower 2s backwards;
+            animation-delay: 1.1s;
+        }
+
+        .flower__leafs::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -100%);
+            width: 8vmin;
+            height: 8vmin;
+            background-color: var(--flower-yellow);
+            filter: blur(10vmin);
+            opacity: 0.4;
+        }
+
+        .flower__leaf {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 9vmin;
+            height: 13vmin;
+            /* Redondeo suave para evitar puntas afiladas */
+            border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+            background-color: var(--flower-yellow);
+            background-image: linear-gradient(to top, var(--flower-orange), var(--flower-yellow));
+            transform-origin: bottom center;
+            opacity: 0.95;
+            box-shadow: inset 0 0 2vmin rgba(255, 255, 255, 0.3);
+        }
+
+        /* Posicionamiento Circular de Pétalos */
+        .flower__leaf--1 { transform: translate(-10%, 1%) rotateY(40deg) rotateX(-50deg); }
+        .flower__leaf--2 { transform: translate(-50%, -4%) rotateX(40deg); }
+        .flower__leaf--3 { transform: translate(-90%, 0%) rotateY(45deg) rotateX(50deg); }
+        .flower__leaf--4 {
+            width: 8vmin; height: 8vmin;
+            transform-origin: bottom left;
+            border-radius: 4vmin 10vmin 4vmin 4vmin;
+            transform: translate(0%, 18%) rotateX(70deg) rotate(-43deg);
+            background-image: linear-gradient(to top, #b38600, var(--flower-yellow));
+            z-index: 1;
+        }
+
+        /* Centro de la Flor (Simulando Semillas de Girasol) */
+        .flower__white-circle {
+            position: absolute;
+            left: -3.5vmin;
+            top: -3vmin;
+            width: 9vmin;
+            height: 4vmin;
+            border-radius: 50%;
+            background-color: #3b2519; /* Marrón oscuro */
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        /* Luces de ambiente */
+        .flower__light {
+            position: absolute;
+            bottom: 0vmin;
+            width: 1vmin;
+            height: 1vmin;
+            background-color: var(--flower-yellow);
+            border-radius: 50%;
+            filter: blur(0.2vmin);
+            animation: light-ans 4s linear infinite backwards;
+        }
+
+        /* Animaciones */
+        @keyframes blooming-flower {
+            0% { transform: scale(0); opacity: 0; }
+        }
+
+        @keyframes grow-flower-tree {
+            0% { height: 0; }
+        }
+
+        @keyframes moving-flower-1 {
+            0%, 100% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+        }
+
+        @keyframes moving-flower-2 {
+            0%, 100% { transform: rotate(18deg); }
+            50% { transform: rotate(22deg); }
+        }
+
+        @keyframes moving-flower-3 {
+            0%, 100% { transform: rotate(-18deg); }
+            50% { transform: rotate(-12deg); }
+        }
+
+        @keyframes light-ans {
+            0% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-20vh); }
+        }
+
+        .ruby-text {
+            position: absolute;
+            top: 10%;
+            width: 100%;
+            text-align: center;
+            color: var(--flower-yellow);
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            text-shadow: 0 0 15px var(--flower-yellow);
+        }
     </style>
 </head>
 <body>
-
-    <div id="loader">
-        <div class="sys-text" id="status-text">Cargando Módulos de Geometría...</div>
-        <div class="progress"><div class="fill" id="p-bar"></div></div>
-        <button id="start-btn">DESPLEGAR JARDÍN DE RUBY</button>
-    </div>
-
-    <div id="ui">
-        <div class="info">
-            <h3>HELIANTHUS CORE v8.0</h3>
-            <p>Estado: Sistema Activo // Modo: Interacción por Clic // Objetivo: Ruby_CL</p>
+    <div class="night"></div>
+    <div class="ruby-text">Para Ruby con Amor</div>
+    
+    <div class="flowers">
+        <div class="flower flower--1">
+            <div class="flower__leafs flower__leafs--1">
+                <div class="flower__leaf flower__leaf--1"></div>
+                <div class="flower__leaf flower__leaf--2"></div>
+                <div class="flower__leaf flower__leaf--3"></div>
+                <div class="flower__leaf flower__leaf--4"></div>
+                <div class="flower__white-circle"></div>
+            </div>
+            <div class="flower__line"></div>
         </div>
-        <div id="final-msg">RUBY: CADA CLIC UN PÉTALO PARA TI🌻</div>
-        <div id="click-prompt">Toca el suelo para plantar</div>
+
+        <div class="flower flower--2">
+            <div class="flower__leafs flower__leafs--2">
+                <div class="flower__leaf flower__leaf--1"></div>
+                <div class="flower__leaf flower__leaf--2"></div>
+                <div class="flower__leaf flower__leaf--3"></div>
+                <div class="flower__leaf flower__leaf--4"></div>
+                <div class="flower__white-circle"></div>
+            </div>
+            <div class="flower__line"></div>
+        </div>
+
+        <div class="flower flower--3">
+            <div class="flower__leafs flower__leafs--3">
+                <div class="flower__leaf flower__leaf--1"></div>
+                <div class="flower__leaf flower__leaf--2"></div>
+                <div class="flower__leaf flower__leaf--3"></div>
+                <div class="flower__leaf flower__leaf--4"></div>
+                <div class="flower__white-circle"></div>
+            </div>
+            <div class="flower__line"></div>
+        </div>
+
+        <div class="flower__light flower__light--1"></div>
+        <div class="flower__light flower__light--2"></div>
+        <div class="flower__light flower__light--3"></div>
+        <div class="flower__light flower__light--4"></div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js" type="module"></script>
-
-    <script type="module">
-        /**
-         * ENGINE CONFIGURATION (Nivel Ingeniero Civil / Arquitectura Visual)
-         * - Raycasting para plantación interactiva
-         * - Geometría Elíptica para pétalos redondeados
-         * - Simulación de viento por oscilación trigonométrica desfada
-         */
-        
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-        let scene, camera, renderer, clock, controls, stars;
-        let sunflowers = [], ground;
-        const loader = document.getElementById('loader');
-        const pBar = document.getElementById('p-bar');
-        const statusText = document.getElementById('status-text');
-        const startBtn = document.getElementById('start-btn');
-
-        // Configuración de la Carga Estructurada
-        let progress = 0;
-        const loading = setInterval(() => {
-            progress += 4;
-            pBar.style.width = progress + "%";
-            if(progress === 20) statusText.innerText = "Calculando Elipses de Pétalos...";
-            if(progress === 60) statusText.innerText = "Sincronizando Sistema de Viento...";
-            if(progress === 90) statusText.innerText = "Estableciendo Puente Lima-Chile...";
-            if(progress >= 100) {
-                clearInterval(loading);
-                statusText.style.display = 'none';
-                startBtn.style.display = 'block';
-            }
-        }, 100);
-
-        startBtn.addEventListener('click', () => {
-            loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-                document.getElementById('final-msg').style.opacity = '1';
-                // Activamos los eventos de clic tras la carga
-                window.addEventListener('click', onDocumentMouseDown, false);
-                window.addEventListener('touchstart', onDocumentTouchStart, false);
-            }, 1500);
-            initSystem();
-            animate();
-        });
-
-        // 1. INICIALIZACIÓN DEL MOTOR GRÁFICO
-        function initSystem() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020204);
-            scene.fog = new THREE.FogExp2(0x020204, 0.015);
-            clock = new THREE.Clock();
-
-            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 15, 50);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.outputColorSpace = THREE.SRGBColorSpace;
-            document.body.appendChild(renderer.domElement);
-
-            // Iluminación Técnica
-            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-            
-            const sunLight = new THREE.DirectionalLight(0xffeb3b, 2.5);
-            sunLight.position.set(50, 100, 20);
-            scene.add(sunLight);
-
-            const rimLight = new THREE.PointLight(0xff69b4, 1.5, 100);
-            rimLight.position.set(-20, 10, -20);
-            scene.add(rimLight);
-
-            // Suelo (Plano de Intersección para Clics)
-            const groundGeo = new THREE.PlaneGeometry(300, 300);
-            const groundMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 1, side: THREE.DoubleSide });
-            ground = new THREE.Mesh(groundGeo, groundMat);
-            ground.rotation.x = -Math.PI / 2;
-            ground.name = "SueloDePlantacion"; // Nombre para identificar en el Raycast
-            scene.add(ground);
-
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.3;
-
-            createStars();
-            // Plantamos una flor central de bienvenida
-            plantSunflower(0, 0); 
-
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        // 2. CONSTRUCCIÓN DE GIRASOLES (Modelado con Redondeo Suave)
-        function createSunflower(x, z, delay) {
-            const group = new THREE.Group();
-
-            // Tallos Curvos Orgánicos
-            const h = 5 + Math.random() * 3;
-            const lean = (Math.random() - 0.5) * 1.5;
-            const curve = new THREE.CatmullRomCurve3([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(lean * 0.3, h * 0.5, (Math.random()-0.5) * 2),
-                new THREE.Vector3(lean, h, 0)
-            ]);
-            
-            const stemGeo = new THREE.TubeGeometry(curve, 32, 0.08, 10, false);
-            const stemMat = new THREE.MeshStandardMaterial({ color: 0x1d4d2b });
-            const stem = new THREE.Mesh(stemGeo, stemMat);
-            group.add(stem);
-
-            // Hojas Orgánicas
-            const leafShape = new THREE.Shape();
-            leafShape.moveTo(0,0);
-            leafShape.bezierCurveTo(0.6, 0.2, 0.9, 1.2, 0, 1.8);
-            leafShape.bezierCurveTo(-0.9, 1.2, -0.6, 0.2, 0, 0);
-            const leafGeo = new THREE.ShapeGeometry(leafShape);
-            const leafMat = new THREE.MeshStandardMaterial({ color: 0x2e5a27, side: THREE.DoubleSide });
-
-            for(let i=0; i<2; i++) {
-                const leaf = new THREE.Mesh(leafGeo, leafMat);
-                const t = 0.4 + (i * 0.25);
-                leaf.position.copy(curve.getPoint(t));
-                leaf.lookAt(curve.getPoint(t + 0.1));
-                leaf.rotation.z += (i % 2 === 0 ? 1 : -1) * 1.4;
-                leaf.scale.set(0.6, 0.6, 0.6);
-                group.add(leaf);
-            }
-
-            // Cabeza del Girasol (Estructura de Torque)
-            const head = new THREE.Group();
-            const topPoint = curve.getPoint(1);
-            head.position.copy(topPoint);
-            head.lookAt(topPoint.clone().add(curve.getTangent(1)));
-            head.rotateX(Math.PI / 2);
-
-            // Núcleo de Semillas (Oclusión Ambiental Simulada)
-            const core = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.8, 0.7, 0.3, 32),
-                new THREE.MeshStandardMaterial({ color: 0x2b1d14, roughness: 1 })
-            );
-            head.add(core);
-
-            // PÉTALOS: DISEÑO REDONDEADO (Uso de Arcos Elípticos)
-            const pShape = new THREE.Shape();
-            pShape.moveTo(0,0);
-            // Reemplazamos Bézier Cúbica por Arcos para evitar puntas afiladas
-            pShape.ellipse(0.3, 0.7, 0.4, 0.8, 0, Math.PI * 2, true); // Elipse completa y suave
-            
-            // Creamos un perfil de pétalo redondeado real
-            const radius = 0.4;
-            const heightP = 1.3;
-            const petalShapeRound = new THREE.Shape();
-            petalShapeRound.moveTo(0, 0);
-            petalShapeRound.lineTo(radius, heightP - radius);
-            petalShapeRound.absarc(0, heightP - radius, radius, 0, Math.PI, false); // Arco redondeado en la punta
-            petalShapeRound.lineTo(-radius, 0);
-            petalShapeRound.lineTo(0, 0);
-
-            const pGeo = new THREE.ShapeGeometry(petalShapeRound);
-            const pMat = new THREE.MeshStandardMaterial({ 
-                color: 0xffcc00, 
-                emissive: 0xff8000, 
-                emissiveIntensity: 0.1, 
-                side: THREE.DoubleSide 
-            });
-
-            const numPetals = 32;
-            for(let i=0; i<numPetals; i++) {
-                const pGroup = new THREE.Group();
-                pGroup.rotation.z = (i/numPetals) * Math.PI * 2;
-                
-                const petal = new THREE.Mesh(pGeo, pMat);
-                petal.position.y = 0.6; // Distancia desde el núcleo
-                petal.rotation.x = 0.3 + (Math.random()*0.1); // Inclinación natural
-                petal.scale.set(0.9, 0.9, 0.9);
-                pGroup.add(petal);
-                head.add(pGroup);
-            }
-
-            group.add(head);
-            group.position.set(x, 0, z);
-            group.scale.set(0,0,0); // Para animación de crecimiento
-            scene.add(group);
-            sunflowers.push({ mesh: group, delay: delay, head: head });
-        }
-
-        function createStars() {
-            const starGeo = new THREE.BufferGeometry();
-            const starCount = 1500;
-            const posArray = new Float32Array(starCount * 3);
-            for(let i=0; i<starCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 600;
-            }
-            starGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            const starMat = new THREE.PointsMaterial({ size: 0.6, color: 0xffffff, transparent: true, opacity: 0.8 });
-            stars = new THREE.Points(starGeo, starMat);
-            scene.add(stars);
-        }
-
-        // 3. LÓGICA DE INTERACCIÓN (Raycasting de Plantación)
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-
-        function onDocumentMouseDown(event) {
-            handlePlanting(event.clientX, event.clientY);
-        }
-
-        function onDocumentTouchStart(event) {
-            if (event.touches.length > 0) {
-                handlePlanting(event.touches[0].clientX, event.touches[0].clientY);
-            }
-        }
-
-        function handlePlanting(clientX, clientY) {
-            // Normalizamos coordenadas del mouse para Three.js
-            mouse.x = (clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
-
-            // Lanzamos el rayo desde la cámara
-            raycaster.setFromCamera(mouse, camera);
-
-            // Calculamos intersecciones solo con el suelo
-            const intersects = raycaster.intersectObject(ground, false);
-
-            if (intersects.length > 0) {
-                // Intersección encontrada: Plantamos
-                const point = intersects[0].point;
-                plantSunflower(point.x, point.z);
-                // Pequeño efecto visual de clic (Polen rosa)
-                spawnPolenClick(point.x, point.y + 1, point.z);
-            }
-        }
-
-        function plantSunflower(x, z) {
-            // Plantación con un retraso corto para que no aparezca de golpe
-            createSunflower(x, z, Math.random() * 0.5);
-        }
-
-        function spawnPolenClick(x, y, z) {
-            const pCount = 10;
-            const pGeo = new THREE.SphereGeometry(0.1, 8, 8);
-            const pMat = new THREE.MeshBasicMaterial({ color: 0xff69b4, transparent: true, opacity: 1 });
-            
-            for(let i=0; i<pCount; i++) {
-                const polen = new THREE.Mesh(pGeo, pMat);
-                polen.position.set(x, y, z);
-                scene.add(polen);
-                
-                // Animación simple de explosión y desaparición
-                setTimeout(() => {
-                    scene.remove(polen);
-                }, 1000);
-            }
-        }
-
-        // 4. LOOP DE ANIMACIÓN Y FÍSICA (Viento Sincronizado)
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getElapsedTime();
-
-            sunflowers.forEach((s, i) => {
-                // Algoritmo de Crecimiento Procedimental
-                if(delta > s.delay && s.mesh.scale.x < 1) {
-                    const growSpeed = 0.02;
-                    s.mesh.scale.x += growSpeed;
-                    s.mesh.scale.y += growSpeed;
-                    s.mesh.scale.z += growSpeed;
-                }
-
-                // Simulación de Viento (Ondas Trigonométricas Desfadas)
-                s.mesh.rotation.x = Math.sin(delta * 0.6 + i) * 0.03;
-                s.mesh.rotation.z = Math.cos(delta * 0.4 + i) * 0.02;
-                s.head.rotation.y += Math.sin(delta + i) * 0.003; // Micro-rotación de la cabeza
-            });
-
-            // Rotación suave del cielo estrellado
-            if(stars) stars.rotation.y += 0.0003;
-
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-    </script>
 </body>
 </html>
