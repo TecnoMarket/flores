@@ -1,183 +1,88 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Infinity Sunflowers | Para Ruby</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'serif'; }
-        #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; color: #ffeb3b; display: flex;
-            flex-direction: column; align-items: center; justify-content: center;
-            z-index: 1000; transition: opacity 1s;
-        }
-        canvas { display: block; }
-        .ui-overlay {
-            position: absolute; top: 20px; left: 20px; color: rgba(255,235,59,0.7);
-            pointer-events: none; text-transform: uppercase; letter-spacing: 5px; font-size: 10px;
-        }
-    </style>
-</head>
-<body>
+function createSunflower(x, z, delay) {
+    const group = new THREE.Group();
 
-<div id="loader">
-    <div style="font-size: 24px; margin-bottom: 20px;">COMPILANDO JARDÍN DIGITAL...</div>
-    <div id="percent">0%</div>
-</div>
+    // 1. TALLO CON CURVATURA (CatmullRomCurve3)
+    // Creamos puntos aleatorios para generar una curva suave
+    const points = [];
+    const height = 4 + Math.random() * 2;
+    const curveAmount = (Math.random() - 0.5) * 2; // Desviación lateral
+    
+    points.push(new THREE.Vector3(0, 0, 0));
+    points.push(new THREE.Vector3(curveAmount * 0.5, height * 0.5, curveAmount * 0.2));
+    points.push(new THREE.Vector3(curveAmount, height, 0));
 
-<div class="ui-overlay">System: 3D Render Engine v2.0 | Target: Ruby_Chile</div>
+    const curve = new THREE.CatmullRomCurve3(points);
+    const stemGeo = new THREE.TubeGeometry(curve, 20, 0.08, 8, false);
+    const stemMat = new THREE.MeshStandardMaterial({ color: 0x2d5a27, roughness: 0.8 });
+    const stem = new THREE.Mesh(stemGeo, stemMat);
+    group.add(stem);
 
-<script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-        }
+    // 2. HOJAS ORGÁNICAS
+    const leafShape = new THREE.Shape();
+    leafShape.moveTo(0, 0);
+    leafShape.quadraticCurveTo(0.5, 0.5, 0, 1);
+    leafShape.quadraticCurveTo(-0.5, 0.5, 0, 0);
+    
+    const leafGeo = new THREE.ShapeGeometry(leafShape);
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x388e3c, side: THREE.DoubleSide });
+
+    for(let i = 0; i < 2; i++) {
+        const leaf = new THREE.Mesh(leafGeo, leafMat);
+        leaf.position.copy(curve.getPoint(0.4 + i * 0.2)); // Posicionadas en el tallo
+        leaf.rotation.z = i % 2 === 0 ? 0.5 : -0.5;
+        leaf.rotation.x = 1;
+        leaf.scale.set(0.6, 0.6, 0.6);
+        group.add(leaf);
     }
-</script>
 
-<script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    // 3. CABEZA DEL GIRASOL (Inclinada según la curva del tallo)
+    const headGroup = new THREE.Group();
+    const lastPoint = points[points.length - 1];
+    headGroup.position.set(lastPoint.x, lastPoint.y, lastPoint.z);
+    
+    // Orientar la cabeza hacia adelante ligeramente
+    headGroup.rotation.x = 0.5; 
 
-    // --- VARIABLES DE MOTOR ---
-    let scene, camera, renderer, composer, controls;
-    const sunflowers = [];
-    const loader = document.getElementById('loader');
-    const percent = document.getElementById('percent');
+    // Centro (Semillas)
+    const centerGeo = new THREE.CylinderGeometry(0.6, 0.5, 0.2, 32);
+    const centerMat = new THREE.MeshStandardMaterial({ color: 0x3b2519 });
+    const center = new THREE.Mesh(centerGeo, centerMat);
+    center.rotation.x = Math.PI / 2;
+    headGroup.add(center);
 
-    function init() {
-        // 1. ESCENA Y CÁMARA
-        scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.02);
+    // 4. PÉTALOS REALISTAS (Planos deformados)
+    const petalShape = new THREE.Shape();
+    petalShape.moveTo(0, 0);
+    petalShape.bezierCurveTo(0.2, 0.1, 0.3, 0.5, 0, 1.2); // Punta estilizada
+    petalShape.bezierCurveTo(-0.3, 0.5, -0.2, 0.1, 0, 0);
 
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 5, 15);
+    const petalGeo = new THREE.ShapeGeometry(petalShape);
+    const petalMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffeb3b, 
+        emissive: 0xffa000, 
+        emissiveIntensity: 0.2,
+        side: THREE.DoubleSide 
+    });
 
-        // 2. RENDERER (NIVEL PROFESIONAL)
-        renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.toneMapping = THREE.ReinhardToneMapping;
-        document.body.appendChild(renderer.domElement);
-
-        // 3. POST-PROCESADO (Para ese brillo "Bloom" nivel cinematográfico)
-        const renderScene = new RenderPass(scene, camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-        bloomPass.threshold = 0.2;
-        bloomPass.strength = 1.2;
-        bloomPass.radius = 0.5;
-
-        composer = new EffectComposer(renderer);
-        composer.addPass(renderScene);
-        composer.addPass(bloomPass);
-
-        // 4. LUCES
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        const sunLight = new THREE.PointLight(0xffeb3b, 10, 100);
-        sunLight.position.set(10, 20, 10);
-        scene.add(sunLight);
-
-        // 5. GENERACIÓN PROCEDIMENTAL DE GIRASOLES
-        createField();
-
-        // 6. CONTROLES
-        controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.autoRotate = true;
-
-        window.addEventListener('resize', onWindowResize);
+    const numPetals = 32;
+    for (let i = 0; i < numPetals; i++) {
+        const pGroup = new THREE.Group();
+        const petal = new THREE.Mesh(petalGeo, petalMat);
         
-        // Simular carga de activos
-        setTimeout(() => {
-            loader.style.opacity = '0';
-            setTimeout(() => loader.remove(), 1000);
-        }, 2000);
-    }
-
-    function createSunflower(x, z) {
-        const group = new THREE.Group();
-
-        // Tallo (Cilindro con ruido)
-        const stemGeo = new THREE.CylinderGeometry(0.1, 0.1, 4, 8);
-        const stemMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32 });
-        const stem = new THREE.Mesh(stemGeo, stemMat);
-        stem.position.y = 2;
-        group.add(stem);
-
-        // Centro del Girasol (Geometría de Toroide para realismo)
-        const centerGeo = new THREE.SphereGeometry(0.5, 32, 32);
-        centerGeo.scale(1, 1, 0.5);
-        const centerMat = new THREE.MeshStandardMaterial({ color: 0x3e2723 });
-        const center = new THREE.Mesh(centerGeo, centerMat);
-        center.position.y = 4;
-        center.rotation.x = Math.PI / 2;
-        group.add(center);
-
-        // Pétalos (Instanced para rendimiento)
-        const petalGeo = new THREE.CapsuleGeometry(0.15, 0.8, 4, 8);
-        const petalMat = new THREE.MeshStandardMaterial({ color: 0xffeb3b, emissive: 0xffeb3b, emissiveIntensity: 0.2 });
+        const angle = (i / numPetals) * Math.PI * 2;
+        pGroup.rotation.z = angle;
         
-        for (let i = 0; i < 24; i++) {
-            const petal = new THREE.Mesh(petalGeo, petalMat);
-            const angle = (i / 24) * Math.PI * 2;
-            petal.position.y = 4;
-            petal.position.x = Math.cos(angle) * 0.7;
-            petal.position.z = Math.sin(angle) * 0.7;
-            petal.rotation.z = angle + Math.PI / 2;
-            petal.rotation.x = Math.PI / 2.5;
-            group.add(petal);
-        }
-
-        group.position.set(x, 0, z);
-        group.scale.set(0,0,0); // Empezar invisibles para animar
-        scene.add(group);
-        sunflowers.push(group);
-    }
-
-    function createField() {
-        for (let i = 0; i < 200; i++) {
-            const x = (Math.random() - 0.5) * 60;
-            const z = (Math.random() - 0.5) * 60;
-            createSunflower(x, z);
-        }
-    }
-
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
+        petal.position.y = 0.5; // Distancia desde el centro
+        petal.rotation.x = 0.2; // Inclinación natural hacia afuera
         
-        const time = Date.now() * 0.001;
-
-        sunflowers.forEach((s, i) => {
-            // Animación de crecimiento inicial
-            if(s.scale.x < 1) {
-                s.scale.x += 0.01;
-                s.scale.y += 0.01;
-                s.scale.z += 0.01;
-            }
-            // Efecto de viento (Seno y Coseno)
-            s.rotation.x = Math.sin(time + i) * 0.05;
-            s.rotation.z = Math.cos(time + i) * 0.05;
-        });
-
-        controls.update();
-        composer.render();
+        pGroup.add(petal);
+        headGroup.add(pGroup);
     }
 
-    init();
-    animate();
-</script>
-</body>
-</html>
+    group.add(headGroup);
+    group.position.set(x, 0, z);
+    group.scale.set(0,0,0);
+    scene.add(group);
+    
+    sunflowers.push({ mesh: group, delay: delay, curve: curve });
+}
