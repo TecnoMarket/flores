@@ -3,257 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Girasoles Cósmicos | Proyecto Ruby</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>Protocolo Helianthus: Ruby CL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Orbitron', sans-serif; }
+        :root { --gold: #ffcc00; --bg: #030305; --pink: #ff69b4; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; overflow: hidden; }
+        
+        /* Pantalla de Carga de Ingeniería */
         #loader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 1000;
-            color: #ffcc00; transition: opacity 1s;
+            background: black; z-index: 1000; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1.5s ease;
         }
-        .bar-container { width: 250px; height: 2px; background: #222; margin-top: 20px; }
-        .bar-fill { width: 0%; height: 100%; background: #ffcc00; box-shadow: 0 0 10px #ffcc00; }
-        #start-btn {
-            display: none; padding: 15px 35px; background: transparent;
-            border: 2px solid #ffcc00; color: #ffcc00; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 5px; transition: 0.4s;
-        }
-        #start-btn:hover { background: #ffcc00; color: #000; }
-        .message-ui {
-            position: absolute; bottom: 40px; width: 100%; text-align: center;
-            color: #ffcc00; letter-spacing: 10px; font-size: 20px;
-            pointer-events: none; text-shadow: 0 0 20px rgba(255,204,0,0.6);
-            opacity: 0; transition: 2s;
-        }
+        .sys-text { font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; text-shadow: 0 0 10px var(--gold); }
+        .progress { width: 250px; height: 1px; background: rgba(255,204,0,0.1); position: relative; }
+        .fill { position: absolute; width: 0%; height: 100%; background: var(--gold); box-shadow: 0 0 10px var(--gold); transition: width 0.3s; }
+        #start-btn { display: none; background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 15px 40px; font-family: 'Orbitron', sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: 5px; transition: 0.4s; }
+        #start-btn:hover { background: var(--gold); color: black; box-shadow: 0 0 30px var(--gold); }
+
+        /* Capa de Interfaz y Mensaje */
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        .info { position: absolute; top: 30px; left: 30px; border-left: 1px solid var(--gold); padding-left: 15px; }
+        .info h3 { margin: 0; font-family: 'Orbitron', sans-serif; color: var(--gold); font-size: 14px; letter-spacing: 3px; }
+        .info p { margin: 5px 0 0; font-size: 9px; text-transform: uppercase; opacity: 0.5; }
+        
+        #final-msg { position: absolute; bottom: 50px; width: 100%; text-align: center; opacity: 0; transition: opacity 3s; font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: white; letter-spacing: 12px; }
+        #click-prompt { position: absolute; bottom: 30px; right: 30px; font-size: 10px; color: var(--pink); letter-spacing: 3px; animation: pulse 2s infinite; text-transform: uppercase; }
+        @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+        canvas { display: block; }
     </style>
 </head>
 <body>
 
-<div id="loader">
-    <div id="load-text">CALIBRANDO GEOMETRÍAS BÉZIER...</div>
-    <div class="bar-container"><div class="bar-fill" id="bar"></div></div>
-    <button id="start-btn">INICIAR RENDER</button>
-</div>
+    <div id="loader">
+        <div class="sys-text" id="status-text">Cargando Módulos de Geometría...</div>
+        <div class="progress"><div class="fill" id="p-bar"></div></div>
+        <button id="start-btn">DESPLEGAR JARDÍN DE RUBY</button>
+    </div>
 
-<div class="message-ui" id="msg">RUBY: MI SOL ETERNO</div>
+    <div id="ui">
+        <div class="info">
+            <h3>HELIANTHUS CORE v8.0</h3>
+            <p>Estado: Sistema Activo // Modo: Interacción por Clic // Objetivo: Ruby_CL</p>
+        </div>
+        <div id="final-msg">RUBY: CADA CLIC UN PÉTALO PARA TI🌻</div>
+        <div id="click-prompt">Toca el suelo para plantar</div>
+    </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js" type="module"></script>
 
-<script>
-    /**
-     * PROYECTO: HELIANTHUS V7.0
-     * ESTÁNDAR: INGENIERÍA CIVIL / RENDERIZADO GPU
-     */
-
-    let scene, camera, renderer, clock, stars, petals = [];
-    const sunflowers = [];
-    
-    // Configuración de la carga
-    let progress = 0;
-    const bar = document.getElementById('bar');
-    const loadText = document.getElementById('load-text');
-    const startBtn = document.getElementById('start-btn');
-
-    const loading = setInterval(() => {
-        progress += 2;
-        bar.style.width = progress + '%';
-        if(progress === 40) loadText.innerText = "GENERANDO SISTEMA DE POLEN...";
-        if(progress === 80) loadText.innerText = "ESTRUCTURANDO PÉTALOS EN CAPAS...";
-        if(progress >= 100) {
-            clearInterval(loading);
-            loadText.style.display = 'none';
-            startBtn.style.display = 'block';
-        }
-    }, 40);
-
-    startBtn.onclick = () => {
-        document.getElementById('loader').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('loader').remove();
-            document.getElementById('msg').style.opacity = '1';
-        }, 1000);
-        init();
-        animate();
-    };
-
-    function init() {
-        scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.015);
-        clock = new THREE.Clock();
-
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 15, 50);
-
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        document.body.appendChild(renderer.domElement);
-
-        // ILUMINACIÓN DE TRES PUNTOS (Estándar de Renderizado)
-        const amb = new THREE.AmbientLight(0xffffff, 0.3);
-        scene.add(amb);
-
-        const sun = new THREE.DirectionalLight(0xffeb3b, 2.5);
-        sun.position.set(20, 50, 20);
-        scene.add(sun);
-
-        const fill = new THREE.PointLight(0xffa000, 1, 100);
-        fill.position.set(-20, 10, 20);
-        scene.add(fill);
-
-        // CREAR ELEMENTOS
-        createStars();
-        createField();
+    <script type="module">
+        /**
+         * ENGINE CONFIGURATION (Nivel Ingeniero Civil / Arquitectura Visual)
+         * - Raycasting para plantación interactiva
+         * - Geometría Elíptica para pétalos redondeados
+         * - Simulación de viento por oscilación trigonométrica desfada
+         */
         
-        window.addEventListener('resize', onResize);
-    }
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    function createStars() {
-        const geo = new THREE.BufferGeometry();
-        const count = 3000;
-        const pos = new Float32Array(count * 3);
-        for(let i=0; i<count*3; i++) pos[i] = (Math.random()-0.5) * 600;
-        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        const mat = new THREE.PointsMaterial({ size: 0.5, color: 0xffffff, transparent: true, opacity: 0.8 });
-        stars = new THREE.Points(geo, mat);
-        scene.add(stars);
-    }
+        let scene, camera, renderer, clock, controls, stars;
+        let sunflowers = [], ground;
+        const loader = document.getElementById('loader');
+        const pBar = document.getElementById('p-bar');
+        const statusText = document.getElementById('status-text');
+        const startBtn = document.getElementById('start-btn');
 
-    function createSunflower(x, z) {
-        const group = new THREE.Group();
-
-        // 1. TALLO DINÁMICO
-        const height = 5 + Math.random() * 3;
-        const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3((Math.random()-0.5)*3, height*0.5, (Math.random()-0.5)*2),
-            new THREE.Vector3((Math.random()-0.5)*2, height, 0)
-        ]);
-        const stemGeo = new THREE.TubeGeometry(curve, 32, 0.12, 12, false);
-        const stemMat = new THREE.MeshStandardMaterial({ color: 0x1e4d2b });
-        const stem = new THREE.Mesh(stemGeo, stemMat);
-        group.add(stem);
-
-        // 2. HOJAS CON GEOMETRÍA DE BÉZIER
-        const leafShape = new THREE.Shape();
-        leafShape.moveTo(0,0);
-        leafShape.bezierCurveTo(0.6, 0.2, 0.9, 1.2, 0, 1.8);
-        leafShape.bezierCurveTo(-0.9, 1.2, -0.6, 0.2, 0, 0);
-        const leafGeo = new THREE.ShapeGeometry(leafShape);
-        const leafMat = new THREE.MeshStandardMaterial({ color: 0x2e5a27, side: THREE.DoubleSide });
-
-        for(let i=0; i<2; i++) {
-            const leaf = new THREE.Mesh(leafGeo, leafMat);
-            const t = 0.4 + (i * 0.2);
-            leaf.position.copy(curve.getPoint(t));
-            leaf.lookAt(curve.getPoint(t + 0.1));
-            leaf.rotation.z += (i % 2 === 0 ? 1 : -1) * 1.5;
-            leaf.scale.set(0.7, 0.7, 0.7);
-            group.add(leaf);
-        }
-
-        // 3. CABEZA DEL GIRASOL (ESTRUCTURA COMPLEJA)
-        const head = new THREE.Group();
-        const top = curve.getPoint(1);
-        head.position.copy(top);
-        head.lookAt(top.clone().add(curve.getTangent(1)));
-        head.rotateX(Math.PI/2);
-
-        // Núcleo de Semillas (Efecto de Oclusión)
-        const center = new THREE.Mesh(
-            new THREE.CylinderGeometry(1.1, 0.9, 0.4, 32),
-            new THREE.MeshStandardMaterial({ color: 0x2b1d14, roughness: 1 })
-        );
-        head.add(center);
-
-        // 4. SISTEMA DE PÉTALOS MULTI-CAPA (Para igualar tu imagen)
-        const pShape = new THREE.Shape();
-        pShape.moveTo(0,0);
-        pShape.quadraticCurveTo(0.4, 0.6, 0, 2.2); // Más largos y finos
-        pShape.quadraticCurveTo(-0.4, 0.6, 0, 0);
-        const pGeo = new THREE.ShapeGeometry(pShape);
-        const pMat = new THREE.MeshStandardMaterial({ 
-            color: 0xffcc00, 
-            emissive: 0xff8000, 
-            emissiveIntensity: 0.15,
-            side: THREE.DoubleSide 
-        });
-
-        // Capa 1: Exterior (28 pétalos)
-        for(let i=0; i<28; i++){
-            const pivot = new THREE.Group();
-            pivot.rotation.z = (i/28) * Math.PI * 2;
-            const p = new THREE.Mesh(pGeo, pMat);
-            p.position.y = 0.8;
-            p.rotation.x = 0.2;
-            pivot.add(p);
-            head.add(pivot);
-        }
-        // Capa 2: Interior (24 pétalos más cortos e inclinados)
-        for(let i=0; i<24; i++){
-            const pivot = new THREE.Group();
-            pivot.rotation.z = ((i+0.5)/24) * Math.PI * 2;
-            const p = new THREE.Mesh(pGeo, pMat);
-            p.scale.set(0.8, 0.8, 0.8);
-            p.position.y = 0.7;
-            p.rotation.x = 0.4;
-            pivot.add(p);
-            head.add(pivot);
-        }
-
-        group.add(head);
-        group.position.set(x, 0, z);
-        group.scale.set(0,0,0);
-        scene.add(group);
-        sunflowers.push({ mesh: group, delay: Math.random() * 4, head: head });
-    }
-
-    function createField() {
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(300, 300),
-            new THREE.MeshStandardMaterial({ color: 0x050505 })
-        );
-        ground.rotation.x = -Math.PI/2;
-        scene.add(ground);
-
-        for(let i=0; i<120; i++) {
-            createSunflower((Math.random()-0.5)*140, (Math.random()-0.5)*140);
-        }
-    }
-
-    function onResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
-        const time = clock.getElapsedTime();
-
-        sunflowers.forEach((s, i) => {
-            // Animación de crecimiento
-            if(time > s.delay && s.mesh.scale.x < 1) {
-                s.mesh.scale.addScalar(0.01);
+        // Configuración de la Carga Estructurada
+        let progress = 0;
+        const loading = setInterval(() => {
+            progress += 4;
+            pBar.style.width = progress + "%";
+            if(progress === 20) statusText.innerText = "Calculando Elipses de Pétalos...";
+            if(progress === 60) statusText.innerText = "Sincronizando Sistema de Viento...";
+            if(progress === 90) statusText.innerText = "Estableciendo Puente Lima-Chile...";
+            if(progress >= 100) {
+                clearInterval(loading);
+                statusText.style.display = 'none';
+                startBtn.style.display = 'block';
             }
-            // Simulación de viento por vectores
-            s.mesh.rotation.x = Math.sin(time * 0.5 + i) * 0.03;
-            s.mesh.rotation.z = Math.cos(time * 0.4 + i) * 0.03;
-            s.head.rotation.y += Math.sin(time + i) * 0.005;
+        }, 100);
+
+        startBtn.addEventListener('click', () => {
+            loader.style.opacity = '0';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                document.getElementById('final-msg').style.opacity = '1';
+                // Activamos los eventos de clic tras la carga
+                window.addEventListener('click', onDocumentMouseDown, false);
+                window.addEventListener('touchstart', onDocumentTouchStart, false);
+            }, 1500);
+            initSystem();
+            animate();
         });
 
-        // Movimiento de cámara cinemático
-        camera.position.x = Math.sin(time * 0.15) * 60;
-        camera.position.z = Math.cos(time * 0.15) * 60;
-        camera.lookAt(0, 10, 0);
+        // 1. INICIALIZACIÓN DEL MOTOR GRÁFICO
+        function initSystem() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020204);
+            scene.fog = new THREE.FogExp2(0x020204, 0.015);
+            clock = new THREE.Clock();
 
-        if(stars) stars.rotation.y += 0.0005;
+            camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 15, 50);
 
-        renderer.render(scene, camera);
-    }
-</script>
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            document.body.appendChild(renderer.domElement);
+
+            // Iluminación Técnica
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+            
+            const sunLight = new THREE.DirectionalLight(0xffeb3b, 2.5);
+            sunLight.position.set(50, 100, 20);
+            scene.add(sunLight);
+
+            const rimLight = new THREE.PointLight(0xff69b4, 1.5, 100);
+            rimLight.position.set(-20, 10, -20);
+            scene.add(rimLight);
+
+            // Suelo (Plano de Intersección para Clics)
+            const groundGeo = new THREE.PlaneGeometry(300, 300);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 1, side: THREE.DoubleSide });
+            ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.name = "SueloDePlantacion"; // Nombre para identificar en el Raycast
+            scene.add(ground);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.3;
+
+            createStars();
+            // Plantamos una flor central de bienvenida
+            plantSunflower(0, 0); 
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // 2. CONSTRUCCIÓN DE GIRASOLES (Modelado con Redondeo Suave)
+        function createSunflower(x, z, delay) {
+            const group = new THREE.Group();
+
+            // Tallos Curvos Orgánicos
+            const h = 5 + Math.random() * 3;
+            const lean = (Math.random() - 0.5) * 1.5;
+            const curve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(lean * 0.3, h * 0.5, (Math.random()-0.5) * 2),
+                new THREE.Vector3(lean, h, 0)
+            ]);
+            
+            const stemGeo = new THREE.TubeGeometry(curve, 32, 0.08, 10, false);
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x1d4d2b });
+            const stem = new THREE.Mesh(stemGeo, stemMat);
+            group.add(stem);
+
+            // Hojas Orgánicas
+            const leafShape = new THREE.Shape();
+            leafShape.moveTo(0,0);
+            leafShape.bezierCurveTo(0.6, 0.2, 0.9, 1.2, 0, 1.8);
+            leafShape.bezierCurveTo(-0.9, 1.2, -0.6, 0.2, 0, 0);
+            const leafGeo = new THREE.ShapeGeometry(leafShape);
+            const leafMat = new THREE.MeshStandardMaterial({ color: 0x2e5a27, side: THREE.DoubleSide });
+
+            for(let i=0; i<2; i++) {
+                const leaf = new THREE.Mesh(leafGeo, leafMat);
+                const t = 0.4 + (i * 0.25);
+                leaf.position.copy(curve.getPoint(t));
+                leaf.lookAt(curve.getPoint(t + 0.1));
+                leaf.rotation.z += (i % 2 === 0 ? 1 : -1) * 1.4;
+                leaf.scale.set(0.6, 0.6, 0.6);
+                group.add(leaf);
+            }
+
+            // Cabeza del Girasol (Estructura de Torque)
+            const head = new THREE.Group();
+            const topPoint = curve.getPoint(1);
+            head.position.copy(topPoint);
+            head.lookAt(topPoint.clone().add(curve.getTangent(1)));
+            head.rotateX(Math.PI / 2);
+
+            // Núcleo de Semillas (Oclusión Ambiental Simulada)
+            const core = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.8, 0.7, 0.3, 32),
+                new THREE.MeshStandardMaterial({ color: 0x2b1d14, roughness: 1 })
+            );
+            head.add(core);
+
+            // PÉTALOS: DISEÑO REDONDEADO (Uso de Arcos Elípticos)
+            const pShape = new THREE.Shape();
+            pShape.moveTo(0,0);
+            // Reemplazamos Bézier Cúbica por Arcos para evitar puntas afiladas
+            pShape.ellipse(0.3, 0.7, 0.4, 0.8, 0, Math.PI * 2, true); // Elipse completa y suave
+            
+            // Creamos un perfil de pétalo redondeado real
+            const radius = 0.4;
+            const heightP = 1.3;
+            const petalShapeRound = new THREE.Shape();
+            petalShapeRound.moveTo(0, 0);
+            petalShapeRound.lineTo(radius, heightP - radius);
+            petalShapeRound.absarc(0, heightP - radius, radius, 0, Math.PI, false); // Arco redondeado en la punta
+            petalShapeRound.lineTo(-radius, 0);
+            petalShapeRound.lineTo(0, 0);
+
+            const pGeo = new THREE.ShapeGeometry(petalShapeRound);
+            const pMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffcc00, 
+                emissive: 0xff8000, 
+                emissiveIntensity: 0.1, 
+                side: THREE.DoubleSide 
+            });
+
+            const numPetals = 32;
+            for(let i=0; i<numPetals; i++) {
+                const pGroup = new THREE.Group();
+                pGroup.rotation.z = (i/numPetals) * Math.PI * 2;
+                
+                const petal = new THREE.Mesh(pGeo, pMat);
+                petal.position.y = 0.6; // Distancia desde el núcleo
+                petal.rotation.x = 0.3 + (Math.random()*0.1); // Inclinación natural
+                petal.scale.set(0.9, 0.9, 0.9);
+                pGroup.add(petal);
+                head.add(pGroup);
+            }
+
+            group.add(head);
+            group.position.set(x, 0, z);
+            group.scale.set(0,0,0); // Para animación de crecimiento
+            scene.add(group);
+            sunflowers.push({ mesh: group, delay: delay, head: head });
+        }
+
+        function createStars() {
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 1500;
+            const posArray = new Float32Array(starCount * 3);
+            for(let i=0; i<starCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 600;
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const starMat = new THREE.PointsMaterial({ size: 0.6, color: 0xffffff, transparent: true, opacity: 0.8 });
+            stars = new THREE.Points(starGeo, starMat);
+            scene.add(stars);
+        }
+
+        // 3. LÓGICA DE INTERACCIÓN (Raycasting de Plantación)
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function onDocumentMouseDown(event) {
+            handlePlanting(event.clientX, event.clientY);
+        }
+
+        function onDocumentTouchStart(event) {
+            if (event.touches.length > 0) {
+                handlePlanting(event.touches[0].clientX, event.touches[0].clientY);
+            }
+        }
+
+        function handlePlanting(clientX, clientY) {
+            // Normalizamos coordenadas del mouse para Three.js
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+            // Lanzamos el rayo desde la cámara
+            raycaster.setFromCamera(mouse, camera);
+
+            // Calculamos intersecciones solo con el suelo
+            const intersects = raycaster.intersectObject(ground, false);
+
+            if (intersects.length > 0) {
+                // Intersección encontrada: Plantamos
+                const point = intersects[0].point;
+                plantSunflower(point.x, point.z);
+                // Pequeño efecto visual de clic (Polen rosa)
+                spawnPolenClick(point.x, point.y + 1, point.z);
+            }
+        }
+
+        function plantSunflower(x, z) {
+            // Plantación con un retraso corto para que no aparezca de golpe
+            createSunflower(x, z, Math.random() * 0.5);
+        }
+
+        function spawnPolenClick(x, y, z) {
+            const pCount = 10;
+            const pGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const pMat = new THREE.MeshBasicMaterial({ color: 0xff69b4, transparent: true, opacity: 1 });
+            
+            for(let i=0; i<pCount; i++) {
+                const polen = new THREE.Mesh(pGeo, pMat);
+                polen.position.set(x, y, z);
+                scene.add(polen);
+                
+                // Animación simple de explosión y desaparición
+                setTimeout(() => {
+                    scene.remove(polen);
+                }, 1000);
+            }
+        }
+
+        // 4. LOOP DE ANIMACIÓN Y FÍSICA (Viento Sincronizado)
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getElapsedTime();
+
+            sunflowers.forEach((s, i) => {
+                // Algoritmo de Crecimiento Procedimental
+                if(delta > s.delay && s.mesh.scale.x < 1) {
+                    const growSpeed = 0.02;
+                    s.mesh.scale.x += growSpeed;
+                    s.mesh.scale.y += growSpeed;
+                    s.mesh.scale.z += growSpeed;
+                }
+
+                // Simulación de Viento (Ondas Trigonométricas Desfadas)
+                s.mesh.rotation.x = Math.sin(delta * 0.6 + i) * 0.03;
+                s.mesh.rotation.z = Math.cos(delta * 0.4 + i) * 0.02;
+                s.head.rotation.y += Math.sin(delta + i) * 0.003; // Micro-rotación de la cabeza
+            });
+
+            // Rotación suave del cielo estrellado
+            if(stars) stars.rotation.y += 0.0003;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+    </script>
 </body>
 </html>
