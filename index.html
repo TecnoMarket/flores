@@ -3,299 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Un Regalo Infinito para Ruby 💛</title>
+    <title>Para Ruby 🌻</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-
     <style>
-        :root {
-            --gold: #ffcc00;
-            --pink: #ff69b4;
-            --dark-bg: #050505;
-        }
-
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background-color: var(--dark-bg);
-            color: white;
-            font-family: 'Montserrat', sans-serif;
-            overflow: hidden;
-            cursor: pointer; /* Indica que se puede hacer clic */
-        }
-
-        /* Contenedor principal de partículas */
-        #tsparticles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        .container {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-            padding: 20px;
-            /* Degradado suave para no tapar partículas */
-            background: radial-gradient(circle, rgba(0,0,0,0) 20%, rgba(0,0,0,0.8) 100%);
-            transition: opacity 2s ease;
-        }
-
-        h1 {
-            font-family: 'Dancing Script', cursive;
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            color: var(--gold);
-            margin: 0;
-            text-shadow: 0 0 20px rgba(255, 204, 0, 0.6);
-        }
-
-        .countdown-container {
-            margin-top: 30px;
-            display: flex;
-            gap: 15px;
-            font-weight: 300;
-            opacity: 0.8;
-        }
-
-        .time-box {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 15px;
-            border-radius: 10px;
-            min-width: 70px;
-            border: 1px solid rgba(255, 204, 0, 0.15);
-        }
-
-        .time-box span {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--gold);
-        }
-
-        .final-message {
-            max-width: 600px;
-            line-height: 1.8;
-            margin-top: 40px;
-            font-size: 1.1rem;
-            background: rgba(0,0,0,0.5);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .location-tag {
-            margin-top: 30px;
-            font-size: 0.8rem;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: var(--pink);
-            text-shadow: 0 0 10px var(--pink);
-        }
-
-        /* Instrucción inicial */
-        #click-prompt {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: white;
-            opacity: 0.7;
-            animation: pulse 2s infinite;
-            z-index: 20;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-
-        .hidden { opacity: 0; pointer-events: none; }
+        :root { --gold: #ffcc00; --pink: #ff69b4; --bg: #050505; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: white; font-family: 'Montserrat', sans-serif; overflow: hidden; cursor: pointer; }
+        #tsparticles { position: absolute; width: 100%; height: 100%; z-index: 1; }
+        .container { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.8) 100%); transition: all 1s; }
+        h1 { font-family: 'Dancing Script', cursive; font-size: clamp(2.5rem, 8vw, 5rem); color: var(--gold); text-shadow: 0 0 20px rgba(255,204,0,0.6); margin: 0; transition: all 0.5s; }
+        .countdown { margin-top: 30px; display: flex; gap: 15px; cursor: help; }
+        .box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,204,0,0.2); min-width: 80px; }
+        .box span { display: block; font-size: 1.8rem; font-weight: 600; color: var(--gold); }
+        .message { max-width: 550px; margin-top: 40px; line-height: 1.8; font-size: 1.1rem; opacity: 0.9; padding: 0 20px; }
+        #click-prompt { position: fixed; bottom: 30px; width: 100%; text-align: center; letter-spacing: 2px; animation: pulse 2s infinite; opacity: 0.6; font-size: 0.8rem; }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+        .hidden { display: none; }
     </style>
 </head>
-<body onclick="triggerSurprise()">
+<body onclick="start()">
 
     <div id="tsparticles"></div>
-
     <div id="click-prompt">Toca la pantalla para tu sorpresa</div>
 
-    <div class="container hidden" id="main-content">
-        <h1>Para Ruby 🌻</h1>
+    <div class="container hidden" id="content">
+        <h1 id="main-title">Flores Amarillas para Ruby</h1>
         
-        <div class="countdown-container">
-            <div class="time-box"><span id="days">0</span>Días</div>
-            <div class="time-box"><span id="hours">0</span>Horas</div>
-            <div class="time-box"><span id="mins">0</span>Min</div>
+        <div class="countdown" id="special-trigger" title="Haz clic aquí para un secreto">
+            <div class="box"><span id="d">0</span>Días</div>
+            <div class="box"><span id="h">0</span>Hrs</div>
+            <div class="box"><span id="m">0</span>Min</div>
         </div>
 
-        <div class="final-message">
-            Hoy el mundo se viste de amarillo, pero para mí, 
-            el brillo más hermoso siempre será el tuyo. 
-            Aunque nos separen miles de kilómetros, mi corazón 
-            siempre late fuerte por ti. Eres la persona más 
-            especial del universo.
+        <div class="message" id="text-msg">
+            Hoy las flores amarillas inundan las calles, pero ninguna brilla tanto como tú. 
+            Aunque estemos a miles de kilómetros, cada día cuenta para volver a vernos. 💛
         </div>
-
-        <div class="location-tag">Lima ➔ Chile</div>
     </div>
 
     <script>
-        // --- 1. CONFIGURACIÓN DEL CONTADOR ---
-        // Pon aquí vuestra fecha especial (Año, Mes-1, Día, Hora...)
-        const startDate = new Date("2024-01-01T00:00:00").getTime(); 
+        // --- CONFIGURACIÓN ---
+        const fechaInicio = new Date("2024-01-01T00:00:00").getTime(); // AJUSTA TU FECHA AQUÍ
+        let activo = false;
 
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const diff = now - startDate;
-
-            document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
-            document.getElementById('hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            document.getElementById('mins').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        // --- LÓGICA DEL CONTADOR ---
+        function update() {
+            const diff = new Date().getTime() - fechaInicio;
+            document.getElementById('d').innerText = Math.floor(diff / (1000*60*60*24));
+            document.getElementById('h').innerText = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+            document.getElementById('m').innerText = Math.floor((diff % (1000*60*60)) / (1000*60));
         }
-        setInterval(updateCountdown, 1000);
-        updateCountdown(); // Ejecutar una vez al inicio
+        setInterval(update, 1000); update();
 
-
-        // --- 2. CONFIGURACIÓN DE PARTÍCULAS (tsparticles) ---
-        let surpriseTriggered = false;
-
-        // Configuración de la Lluvia Inicial
-        const rainConfig = {
-            particles: {
-                number: { value: 40, density: { enable: true, value_area: 800 } },
-                shape: { type: "char", options: { char: { value: "🌻" } } },
-                opacity: { value: 0.8, random: true },
-                size: { value: 20, random: true },
-                move: {
-                    enable: true,
-                    speed: 2,
-                    direction: "bottom",
-                    straight: false,
-                    out_mode: "out"
-                },
-                rotate: { value: 0, random: true, direction: "clockwise", animation: { enable: true, speed: 5, sync: false } }
-            }
-        };
-
-        // Configuración del Corazón Sorpresa
-        const heartConfig = {
-            particles: {
-                number: { value: 2000, density: { enable: false } },
-                color: { value: ["#ffcc00", "#ff69b4", "#ffffff"] },
-                shape: { type: "circle" },
-                opacity: { value: { min: 0.1, max: 0.8 }, animation: { enable: true, speed: 1, sync: false } },
-                size: { value: { min: 1, max: 3 } },
-                move: {
-                    enable: true,
-                    speed: 3,
-                    direction: "none",
-                    random: false,
-                    straight: false,
-                    out_mode: "destroy",
-                    attract: { enable: true, rotateX: 600, rotateY: 1200 }
-                }
-            },
-            interactivity: {
-                detect_on: "canvas",
-                events: { resize: true },
-                modes: {
-                    grab: { distance: 400, line_linked: { opacity: 1 } },
-                    bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
-                    repulse: { distance: 200, duration: 0.4 },
-                    push: { particles_nb: 4 },
-                    remove: { particles_nb: 2 }
-                }
-            },
-            // Esta es la clave: el efecto de "vórtice" que forma el corazón
-            emitters: {
-                direction: "none",
-                size: { width: 0, height: 0 },
-                position: { x: 50, y: 50 },
-                rate: { quantity: 10, delay: 0.01 },
-                particles: {
-                    move: {
-                        speed: 5,
-                        outMode: "destroy",
-                        wobble: { enable: true, distance: 10, speed: 10 },
-                        attract: {
-                            enable: true,
-                            distance: 300,
-                            rotate: { x: 1000, y: 2000 }
-                        },
-                        // Define la forma del corazón matemáticamente
-                        path: {
-                            enable: true,
-                            delay: { value: 0 },
-                            options: {
-                                type: "heart",
-                                      scale: 10
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        // Inicializar tsparticles con la lluvia
-        tsParticles.load("tsparticles", rainConfig);
-
-
-        // --- 3. LÓGICA DE LA SORPRESA ---
-        function triggerSurprise() {
-            if (surpriseTriggered) return; // Evitar que se ejecute más de una vez
-            surpriseTriggered = true;
-
-            // Ocultar prompt y mostrar contenido
+        // --- PARTÍCULAS INICIALES (LLUVIA) ---
+        function start() {
+            if(activo) return; activo = true;
             document.getElementById('click-prompt').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('content').classList.remove('hidden');
 
-            // Cargar la nueva configuración de partículas (El Corazón)
-            //tsparticles.load("tsparticles", heartConfig);
+            tsParticles.load("tsparticles", {
+                particles: {
+                    number: { value: 50 },
+                    shape: { type: "char", options: { char: { value: ["🌻", "🌼"] } } },
+                    move: { enable: true, speed: 2, direction: "bottom", out_mode: "out" },
+                    size: { value: 25 },
+                    rotate: { animation: { enable: true, speed: 5 } }
+                }
+            });
+        }
+
+        // --- EL SECRETO DEL 808 (O CLIC EN CONTADOR) ---
+        document.getElementById('special-trigger').addEventListener('click', (e) => {
+            e.stopPropagation(); // Para que no interfiera con el body click
             
-            // Alternativa: Usar un efecto de explosión antes del corazón
-            tsParticles.load("tsparticles", heartConfig);
-        }
-        // Añade esto al final de tu script
-document.getElementById('countdown').addEventListener('click', () => {
-    // 1. Cambiamos el mensaje central por algo más íntimo
-    document.getElementById('main-title').innerText = "Cada segundo ha validó la pena";
-    
-    // 2. Disparamos una ráfaga masiva de partículas
-    tsParticles.load("tsparticles", {
-        particles: {
-            number: { value: 100 },
-            shape: { type: "heart" },
-            color: { value: "#ff69b4" },
-            move: {
-                enable: true,
-                speed: 10,
-                out_mode: "destroy"
-            }
-        },
-        emitters: {
-            direction: "none",
-            spawnColor: { value: "#ffcc00" },
-            position: { x: 50, y: 50 },
-            rate: { quantity: 5, delay: 0.1 }
-        }
-    });
+            document.getElementById('main-title').innerText = "Eres mi infinito, Ruby";
+            document.getElementById('main-title').style.color = "#ff69b4";
+            document.getElementById('text-msg').innerHTML = "<b>808 días y contando...</b><br>Construyendo un puente eterno entre Lima y Chile. Te quiero.";
 
-    // 3. Un pequeño sonido de campana o brillo (opcional)
-    console.log("Sorpresa extra activada para Ruby");
-});
+            tsParticles.load("tsparticles", {
+                particles: {
+                    number: { value: 0 },
+                    destroy: { mode: "split", split: { count: 1 } },
+                    shape: { type: "heart" },
+                    color: { value: ["#ffcc00", "#ff69b4"] },
+                    move: { enable: true, speed: { min: 5, max: 15 }, out_mode: "destroy" }
+                },
+                emitters: {
+                    direction: "top",
+                    rate: { quantity: 15, delay: 0.1 },
+                    position: { x: 50, y: 100 },
+                    size: { width: 100, height: 0 }
+                }
+            });
+        });
     </script>
-    
 </body>
 </html>
