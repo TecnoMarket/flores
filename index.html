@@ -3,101 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jardín Orgánico para Ruby</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300&display=swap" rel="stylesheet">
+    <title>Girasoles Reales para Ruby</title>
     <style>
-        :root { --gold: #ffcc00; --dark: #030305; --stem-green: #1d4d2b; }
-        *, *::after, *::before { padding: 0; margin: 0; box-sizing: border-box; }
-        
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--dark); color: white; font-family: 'Montserrat', sans-serif; overflow: hidden; perspective: 1000px; cursor: crosshair; }
-        
-        .night { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(ellipse at top, transparent 0%, var(--dark)), radial-gradient(ellipse at bottom, var(--dark), rgba(255, 235, 59, 0.1)); z-index: -1; }
-
-        .flowers { position: relative; width: 100%; height: 100vh; display: flex; align-items: flex-end; justify-content: center; z-index: 10; }
-
-        /* Estructura Base de la Flor (Parametrizada) */
-        .flower { position: absolute; bottom: 0; transform-origin: bottom center; animation: blooming-flower 2.5s ease-out backwards; display: flex; flex-direction: column; align-items: center; }
-
-        .flower__line { width: 1vmin; background-image: linear-gradient(to top, var(--stem-green), #3a7d44); box-shadow: inset 0 0 2px rgba(0,0,0,0.5); }
-
-        .flower__head { position: relative; transform-origin: center center; margin-bottom: -1vmin; /* Conexión orgánica con el tallo */ }
-
-        .flower__leafs { position: relative; display: flex; justify-content: center; align-items: center; }
-
-        /* Pétalos Redondeados (Diseño Solicitado) */
-        .flower__leaf {
-            position: absolute; bottom: 0; width: 8vmin; height: 11vmin;
-            border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%; /* Redondeo suave */
-            background-image: linear-gradient(to top, #FF8C00, #FFD700);
-            transform-origin: bottom center; opacity: 0.95;
-            box-shadow: inset 0 0 2vmin rgba(255, 255, 255, 0.3);
+        :root {
+            --dark: #000;
+            --sun-yellow: #FFD700;
+            --sun-orange: #fb8500;
+            --leaf-green: #2d6a4f;
+            --vein-green: #1b4332;
         }
 
-        .flower__center { position: absolute; width: 7vmin; height: 3.5vmin; border-radius: 50%; background-color: #3b2519; z-index: 20; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        *, *::after, *::before { padding: 0; margin: 0; box-sizing: border-box; }
+        body {
+            display: flex; align-items: flex-end; justify-content: center;
+            min-height: 100vh; background-color: var(--dark);
+            overflow: hidden; perspective: 1000px;
+        }
 
-        /* Mensajes Flotantes */
-        .message { position: absolute; color: var(--gold); font-family: 'Dancing Script', cursive; font-size: 20px; pointer-events: none; animation: floatUp 4s ease-out forwards; white-space: nowrap; text-shadow: 0 0 15px var(--gold); z-index: 100; }
+        .night {
+            position: fixed; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at bottom, #111, var(--dark));
+            z-index: -1;
+        }
 
-        @keyframes blooming-flower { 0% { transform: scale(0) translateY(100px); opacity: 0; } }
-        @keyframes floatUp { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-40vh) scale(1.3); } }
+        .garden { position: relative; width: 100%; height: 100vh; }
 
-        .hint { position: fixed; top: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.3); font-size: 10px; letter-spacing: 4px; text-transform: uppercase; }
+        /* CONTENEDOR DE LA FLOR */
+        .flower {
+            position: absolute; bottom: 0;
+            display: flex; flex-direction: column; align-items: center;
+            transform-origin: bottom center;
+            animation: grow 3s ease-out forwards;
+        }
+
+        /* CABEZA: Mirando a la pantalla */
+        .flower__head {
+            position: relative; width: 15vmin; height: 15vmin;
+            z-index: 5; transform: translateY(50%);
+        }
+
+        .flower__center {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6vmin; height: 6vmin;
+            background: radial-gradient(circle, #432818, #221108);
+            border-radius: 50%; z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+            border: 1px solid #582f0e;
+        }
+
+        /* Pétalos en gran cantidad (24 unidades) */
+        .petal {
+            position: absolute; bottom: 50%; left: 50%;
+            width: 3.5vmin; height: 10vmin;
+            background: linear-gradient(to top, var(--sun-orange), var(--sun-yellow));
+            border-radius: 50% 50% 20% 20%;
+            transform-origin: bottom center;
+            filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));
+        }
+
+        /* TALLO CURVO */
+        .flower__stem {
+            width: 1.2vmin;
+            background: linear-gradient(to right, #1b4332, #2d6a4f, #1b4332);
+            border-radius: 4px;
+        }
+
+        /* HOJAS: Verdes, aserradas y con venas */
+        .leaf-green {
+            position: absolute;
+            width: 12vmin; height: 8vmin;
+            background-color: var(--leaf-green);
+            /* Gradiente para simular venas */
+            background-image: 
+                linear-gradient(30deg, transparent 45%, var(--vein-green) 50%, transparent 55%),
+                linear-gradient(-30deg, transparent 45%, var(--vein-green) 50%, transparent 55%),
+                linear-gradient(to right, var(--vein-green) 2px, transparent 2px);
+            background-size: 100% 100%;
+            
+            /* Clip-path para contorno aserrado/dentado */
+            clip-path: polygon(
+                0% 50%, 15% 20%, 30% 35%, 45% 10%, 60% 25%, 75% 0%, 100% 50%,
+                75% 100%, 60% 75%, 45% 90%, 30% 65%, 15% 80%
+            );
+            transform-origin: left center;
+        }
+
+        /* Animaciones */
+        @keyframes grow {
+            0% { transform: scale(0) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .msg {
+            position: absolute; color: var(--sun-yellow);
+            font-family: 'Courier New', monospace; font-weight: bold;
+            pointer-events: none; animation: float 3s ease-out forwards;
+        }
+
+        @keyframes float {
+            0% { opacity: 0; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
     </style>
 </head>
 <body>
     <div class="night"></div>
-    <div class="hint">Haz clic en el suelo para plantar tu girasol</div>
-    <div class="flowers" id="garden"></div>
+    <div class="garden" id="garden"></div>
 
     <script>
         const garden = document.getElementById('garden');
-        const mensajes = [ "Para Ruby", "Mi Sol", "Brillas", "Única", "Te Quiero", "Elegancia" ];
+        const frases = ["PARA RUBY", "MIRANDO AL SOL", "JARDÍN REAL", "TE QUIERO"];
 
-        function plantFlower(clientX) {
-            const flower = document.createElement('div');
-            flower.className = 'flower';
+        function createFlower(x) {
+            const f = document.createElement('div');
+            f.className = 'flower';
+            const h = Math.random() * 30 + 40; // Altura aleatoria
+            const angle = (Math.random() - 0.5) * 20; // Inclinación
             
-            // --- INGENIERÍA DE VARIABLES ESTOCÁSTICAS ---
-            const stemHeight = Math.floor(Math.random() * 40) + 40; // Altura: 40vmin a 80vmin
-            const stemLean = (Math.random() - 0.5) * 30; // Inclinación: -15deg a +15deg
-            const headAngle = (Math.random() - 0.5) * 20; // Ángulo de la cabeza: -10deg a +10deg
-            
-            flower.style.left = clientX + 'px';
-            flower.style.transform = `rotate(${stemLean}deg)`;
+            f.style.left = x + 'px';
+            f.style.transform = `rotate(${angle}deg)`;
 
-            flower.innerHTML = `
-                <div class="flower__head" style="transform: rotate(${headAngle}deg)">
-                    <div class="flower__leafs">
-                        <div class="flower__leaf" style="transform: translate(-10%, 1%) rotateY(40deg) rotateX(-50deg)"></div>
-                        <div class="flower__leaf" style="transform: translate(-50%, -4%) rotateX(40deg)"></div>
-                        <div class="flower__leaf" style="transform: translate(-90%, 0%) rotateY(45deg) rotateX(50deg)"></div>
-                        <div class="flower__leaf" style="width:7vmin; height:7vmin; transform: translate(0%, 18%) rotateX(70deg) rotate(-43deg); background:#b38600; opacity:0.8;"></div>
-                        <div class="flower__center"></div>
-                    </div>
+            // Generar 24 pétalos para densidad real
+            let petals = '';
+            for(let i=0; i<24; i++) {
+                petals += `<div class="petal" style="transform: translateX(-50%) rotate(${i * 15}deg)"></div>`;
+            }
+
+            f.innerHTML = `
+                <div class="flower__head">
+                    <div class="flower__center"></div>
+                    ${petals}
                 </div>
-                <div class="flower__line" style="height: ${stemHeight}vmin"></div>
+                <div class="flower__stem" style="height: ${h}vmin">
+                    <div class="leaf-green" style="left: -10vmin; top: 40%; transform: rotate(-20deg) scaleX(-1);"></div>
+                    <div class="leaf-green" style="right: -10vmin; top: 60%; transform: rotate(20deg);"></div>
+                </div>
             `;
-            
-            garden.appendChild(flower);
 
-            // Crear mensaje flotante
-            const msg = document.createElement('div');
-            msg.className = 'message';
-            msg.innerText = mensajes[Math.floor(Math.random() * mensajes.length)];
-            msg.style.left = clientX + 'px';
-            msg.style.bottom = '20vmin';
-            document.body.appendChild(msg);
+            garden.appendChild(f);
 
-            // Limpieza de DOM automática
-            setTimeout(() => msg.remove(), 4000);
+            // Mensaje flotante
+            const m = document.createElement('div');
+            m.className = 'msg';
+            m.innerText = frases[Math.floor(Math.random()*frases.length)];
+            m.style.left = x + 'px';
+            m.style.bottom = '30vh';
+            document.body.appendChild(m);
+            setTimeout(() => m.remove(), 3000);
         }
 
-        window.addEventListener('mousedown', (e) => plantFlower(e.clientX));
-        window.addEventListener('touchstart', (e) => plantFlower(e.touches[0].clientX));
+        window.addEventListener('mousedown', (e) => createFlower(e.clientX));
+        window.addEventListener('touchstart', (e) => createFlower(e.touches[0].clientX));
 
-        // Inicialización estocástica (2 flores por defecto)
-        setTimeout(() => plantFlower(window.innerWidth * 0.3), 500);
-        setTimeout(() => plantFlower(window.innerWidth * 0.7), 800);
+        // Primera flor de muestra
+        setTimeout(() => createFlower(window.innerWidth / 2), 500);
     </script>
 </body>
 </html>
