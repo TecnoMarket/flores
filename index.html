@@ -3,271 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmos Floral: Ruby Edition 🌻</title>
+    <title>Girasoles 3D - Engineering Edition 🌻</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #fff; }
-        #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 1000;
-            transition: opacity 1.5s ease-out;
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.8); z-index: 100; transition: 1.5s ease;
         }
-        .spinner { width: 50px; height: 50px; border: 3px solid rgba(255,235,59,0.1); border-top-color: #ffeb3b; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        canvas { display: block; }
-        .ui-info { position: absolute; top: 20px; left: 20px; pointer-events: none; font-size: 9px; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.4); border-left: 1px solid #ffeb3b; padding-left: 10px; }
-        .message-overlay { position: absolute; bottom: 30px; width: 100%; text-align: center; pointer-events: none; }
-        .message-overlay h1 { font-size: 1.5rem; font-weight: 300; letter-spacing: 5px; color: #ffeb3b; text-shadow: 0 0 15px rgba(255,235,59,0.5); margin: 0; text-transform: uppercase; }
+        #overlay.hidden { opacity: 0; pointer-events: none; }
+        .btn-start {
+            padding: 15px 40px; border: 2px solid #ffeb3b; background: transparent;
+            color: #ffeb3b; font-size: 14px; letter-spacing: 5px; cursor: pointer;
+            text-transform: uppercase; transition: 0.3s;
+        }
+        .btn-start:hover { background: #ffeb3b; color: #000; }
+        .ui-label {
+            position: absolute; top: 20px; left: 20px; color: rgba(255,255,255,0.3);
+            font-size: 10px; letter-spacing: 2px;
+        }
     </style>
 </head>
 <body>
 
-<div id="loader">
-    <div class="spinner"></div>
-    <div style="letter-spacing: 5px; font-size: 12px;">ESTRUCTURANDO JARDÍN TRIDIMENSIONAL</div>
-    <div style="font-size: 9px; margin-top: 10px; color: #ffeb3b; opacity: 0.7;">SHADER CORE: PROCEDURAL COSMOS ACTIVE</div>
-</div>
+    <div id="overlay">
+        <button class="btn-start" onclick="initExperience()">Ver Jardín Digital</button>
+    </div>
 
-<div class="ui-info">
-    System Status: Online<br>
-    Render: WebGL 2.0 / Three.js<br>
-    Object: Helianthus Annuus (Procedural)<br>
-    Location: Lima -> Chile
-</div>
+    <div class="ui-label">MODELO: HELIANTHUS 3D v5.0 | SHADER: COSMIC VORTEX</div>
 
-<div class="message-overlay">
-    <h1>Para la más especial</h1>
-</div>
-
-<script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
         }
-    }
-</script>
+    </script>
 
-<script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // --- MOTOR CORE ---
-    let scene, camera, renderer, composer, controls, skybox, startTime;
-    const sunflowers = [];
-    const loaderElement = document.getElementById('loader');
+        let scene, camera, renderer, controls, clock;
+        const sunflowers = [];
 
-    // --- SHADERS GLSL (MATEMÁTICA PURA PARA EL COSMOS) ---
-    const cosmicVertexShader = `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `;
-
-    const cosmicFragmentShader = `
-        uniform float time;
-        uniform vec2 resolution;
-        varying vec2 vUv;
-
-        float hash(vec2 p) {
-            return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+        window.initExperience = function() {
+            document.getElementById('overlay').classList.add('hidden');
+            init();
+            animate();
         }
 
-        void main() {
-            vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
-            vec3 color = vec3(0.0, 0.0, 0.02); // Fondo base
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020205);
+            clock = new THREE.Clock();
 
-            // Estrellas Distantes
-            for (float i = 0; i < 4.0; i++) {
-                vec2 q = uv * (150.0 + i * 80.0);
-                float h = hash(floor(q));
-                if (h > 0.992) {
-                    float twinkle = sin(time * 3.0 + h * 10.0) * 0.5 + 0.5;
-                    color += vec3(1.0, 0.95, 0.8) * twinkle;
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 12, 35);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            document.body.appendChild(renderer.domElement);
+
+            // LUCES
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+            const point = new THREE.PointLight(0xffcc00, 20, 100);
+            point.position.set(10, 20, 10);
+            scene.add(point);
+
+            // CREAR JARDÍN (REEMPLAZANDO LOS MODELOS ANTERIORES)
+            for(let i=0; i<150; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                createSunflower(x, z);
+            }
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createSunflower(x, z) {
+            const group = new THREE.Group();
+
+            // 1. TALLO CURVO (CatmullRom)
+            const h = 5 + Math.random() * 3;
+            const lean = (Math.random() - 0.5) * 2;
+            const points = [
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(lean * 0.3, h * 0.4, (Math.random()-0.5) * 1.5),
+                new THREE.Vector3(lean, h, 0)
+            ];
+            const curve = new THREE.CatmullRomCurve3(points);
+            const stemGeo = new THREE.TubeGeometry(curve, 32, 0.1, 12, false);
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x2d5a27 });
+            const stem = new THREE.Mesh(stemGeo, stemMat);
+            group.add(stem);
+
+            // 2. CABEZA DEL GIRASOL
+            const head = new THREE.Group();
+            const topPos = curve.getPoint(1);
+            head.position.copy(topPos);
+            head.lookAt(topPos.clone().add(curve.getTangent(1)));
+            head.rotateX(Math.PI / 2);
+
+            // Centro (Semillas)
+            const centerGeo = new THREE.CylinderGeometry(0.8, 0.7, 0.3, 32);
+            const centerMat = new THREE.MeshStandardMaterial({ color: 0x3b2519, roughness: 1 });
+            const center = new THREE.Mesh(centerGeo, centerMat);
+            head.add(center);
+
+            // 3. PÉTALOS REALISTAS (Bezier Shape)
+            const petalShape = new THREE.Shape();
+            petalShape.moveTo(0,0);
+            petalShape.bezierCurveTo(0.3, 0.2, 0.5, 0.8, 0, 1.5);
+            petalShape.bezierCurveTo(-0.5, 0.8, -0.3, 0.2, 0, 0);
+
+            const petalGeo = new THREE.ShapeGeometry(petalShape);
+            const petalMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffcc00, 
+                side: THREE.DoubleSide,
+                emissive: 0xffa000,
+                emissiveIntensity: 0.1
+            });
+
+            const numPetals = 36;
+            for(let i=0; i<numPetals; i++) {
+                const pivot = new THREE.Group();
+                const p = new THREE.Mesh(petalGeo, petalMat);
+                pivot.rotation.y = (i / numPetals) * Math.PI * 2;
+                p.position.z = 0.65;
+                p.rotation.x = -Math.PI / 2 + 0.25;
+                pivot.add(p);
+                head.add(pivot);
+            }
+
+            // 4. HOJAS (Estructura de soporte lateral)
+            const leafShape = new THREE.Shape();
+            leafShape.moveTo(0,0);
+            leafShape.quadraticCurveTo(0.6, 0.6, 0, 1.4);
+            leafShape.quadraticCurveTo(-0.6, 0.6, 0, 0);
+            const leafGeo = new THREE.ShapeGeometry(leafShape);
+            const leafMat = new THREE.MeshStandardMaterial({ color: 0x3d7a35, side: THREE.DoubleSide });
+
+            for(let i=0; i<2; i++) {
+                const leaf = new THREE.Mesh(leafGeo, leafMat);
+                const t = 0.4 + (i * 0.25);
+                leaf.position.copy(curve.getPoint(t));
+                leaf.lookAt(curve.getPoint(t+0.1));
+                leaf.rotation.z += (i%2==0 ? 1 : -1) * 1.2;
+                leaf.scale.set(0.7, 0.7, 0.7);
+                group.add(leaf);
+            }
+
+            group.position.set(x, 0, z);
+            group.scale.set(0,0,0);
+            scene.add(group);
+            sunflowers.push({ mesh: group, delay: Math.random() * 2 });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getElapsedTime();
+
+            sunflowers.forEach((s, i) => {
+                if(delta > s.delay && s.mesh.scale.x < 1) {
+                    s.mesh.scale.addScalar(0.01);
                 }
-            }
+                // Viento suave (Matemática trigonométrica)
+                s.mesh.rotation.x = Math.sin(delta + i) * 0.03;
+                s.mesh.rotation.z = Math.cos(delta + i) * 0.03;
+            });
 
-            // Nebulosas Dinámicas
-            float n = sin(uv.x * 2.0 + time * 0.1) * cos(uv.y * 2.0 - time * 0.1);
-            color += vec3(0.1, 0.05, 0.2) * abs(n);
-
-            gl_FragColor = vec4(color, 1.0);
+            controls.update();
+            renderer.render(scene, camera);
         }
-    `;
-
-    function init() {
-        scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.012);
-        startTime = Date.now();
-
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
-        camera.position.set(0, 10, 30);
-
-        renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        document.body.appendChild(renderer.domElement);
-
-        // POST-PROCESADO (BLOOM PARA BRILLO)
-        const renderPass = new RenderPass(scene, camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85);
-        bloomPass.threshold = 0.2;
-        bloomPass.strength = 1.2;
-        bloomPass.radius = 0.6;
-
-        composer = new EffectComposer(renderer);
-        composer.addPass(renderPass);
-        composer.addPass(bloomPass);
-
-        // LUCES
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-        const pLight = new THREE.PointLight(0xffeb3b, 20, 200);
-        pLight.position.set(20, 40, 20);
-        scene.add(pLight);
-
-        // SKYBOX Y JARDÍN
-        createSkybox();
-        createGarden();
-
-        controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.5;
-
-        window.addEventListener('resize', onWindowResize);
-
-        setTimeout(() => {
-            loaderElement.style.opacity = '0';
-            setTimeout(() => loaderElement.remove(), 1500);
-        }, 3000);
-    }
-
-    function createSkybox() {
-        const skyGeo = new THREE.SphereGeometry(900, 32, 32);
-        const skyMat = new THREE.ShaderMaterial({
-            vertexShader: cosmicVertexShader,
-            fragmentShader: cosmicFragmentShader,
-            uniforms: {
-                time: { value: 0 },
-                resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
-            },
-            side: THREE.BackSide
-        });
-        skybox = new THREE.Mesh(skyGeo, skyMat);
-        scene.add(skybox);
-    }
-
-    function createSunflower(x, z, delay) {
-        const group = new THREE.Group();
-
-        // 1. TALLO CURVO (INGENIERÍA ORGÁNICA)
-        const h = 4 + Math.random() * 2;
-        const lean = (Math.random() - 0.5) * 2;
-        const points = [
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(lean * 0.4, h * 0.5, (Math.random()-0.5)),
-            new THREE.Vector3(lean, h, 0)
-        ];
-        const curve = new THREE.CatmullRomCurve3(points);
-        const stemGeo = new THREE.TubeGeometry(curve, 24, 0.08, 8, false);
-        const stemMat = new THREE.MeshStandardMaterial({ color: 0x2d5a27 });
-        const stem = new THREE.Mesh(stemGeo, stemMat);
-        group.add(stem);
-
-        // 2. HOJAS
-        const leafShape = new THREE.Shape();
-        leafShape.moveTo(0,0);
-        leafShape.quadraticCurveTo(0.5, 0.6, 0, 1.2);
-        leafShape.quadraticCurveTo(-0.5, 0.6, 0, 0);
-        const leafGeo = new THREE.ShapeGeometry(leafShape);
-        const leafMat = new THREE.MeshStandardMaterial({ color: 0x388e3c, side: THREE.DoubleSide });
-
-        for(let i=0; i<2; i++) {
-            const leaf = new THREE.Mesh(leafGeo, leafMat);
-            const t = 0.4 + (i * 0.2);
-            leaf.position.copy(curve.getPoint(t));
-            leaf.lookAt(curve.getPoint(t+0.1));
-            leaf.rotation.z += (i%2==0 ? 1 : -1) * Math.PI/3;
-            leaf.scale.set(0.6, 0.6, 0.6);
-            group.add(leaf);
-        }
-
-        // 3. CABEZA Y PÉTALOS
-        const head = new THREE.Group();
-        const top = curve.getPoint(1);
-        head.position.copy(top);
-        head.lookAt(top.clone().add(curve.getTangent(1)));
-        head.rotateX(Math.PI/2);
-
-        const center = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.5, 0.2, 32), new THREE.MeshStandardMaterial({ color: 0x3b2519 }));
-        head.add(center);
-
-        const petalShape = new THREE.Shape();
-        petalShape.moveTo(0,0);
-        petalShape.bezierCurveTo(0.3, 0.2, 0.4, 0.7, 0, 1.3);
-        petalShape.bezierCurveTo(-0.4, 0.7, -0.3, 0.2, 0, 0);
-        const petalGeo = new THREE.ShapeGeometry(petalShape);
-        const petalMat = new THREE.MeshStandardMaterial({ color: 0xffeb3b, emissive: 0xffa000, emissiveIntensity: 0.2, side: THREE.DoubleSide });
-
-        for(let i=0; i<32; i++) {
-            const pivot = new THREE.Group();
-            const p = new THREE.Mesh(petalGeo, petalMat);
-            pivot.rotation.y = (i/32) * Math.PI * 2;
-            p.position.z = 0.55;
-            p.rotation.x = -Math.PI/2 + 0.3;
-            pivot.add(p);
-            head.add(pivot);
-        }
-
-        group.add(head);
-        group.position.set(x, 0, z);
-        group.scale.set(0,0,0);
-        scene.add(group);
-        sunflowers.push({ mesh: group, delay: delay });
-    }
-
-    function createGarden() {
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0x050505 }));
-        ground.rotation.x = -Math.PI/2;
-        scene.add(ground);
-
-        for(let i=0; i<250; i++) {
-            createSunflower((Math.random()-0.5)*100, (Math.random()-0.5)*100, Math.random()*3);
-        }
-    }
-
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
-        skybox.material.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
-        const t = (Date.now() - startTime) * 0.001;
-        if(skybox) skybox.material.uniforms.time.value = t;
-
-        sunflowers.forEach((s, i) => {
-            if(t > s.delay && s.mesh.scale.x < 1) {
-                s.mesh.scale.addScalar(0.015);
-            }
-            s.mesh.rotation.y = Math.sin(t + i) * 0.05;
-        });
-
-        controls.update();
-        composer.render();
-    }
-
-    init();
-    animate();
-</script>
+    </script>
 </body>
 </html>
